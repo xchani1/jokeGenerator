@@ -5,6 +5,7 @@ Usage: python main.py [--model gemini-2.5-flash] [--location us-central1]
 """
 import argparse
 import json
+import os
 import random
 from pathlib import Path
 
@@ -21,9 +22,11 @@ TOPICS = [
 
 
 def make_client(location="us-central1"):
-    project_id = json.loads(CREDS_PATH.read_text())["project_id"]
-    credentials = service_account.Credentials.from_service_account_file(
-        CREDS_PATH, scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    # In GitHub Actions the key comes from a secret instead of creds.json.
+    info = json.loads(os.environ.get("GCP_CREDENTIALS") or CREDS_PATH.read_text())
+    project_id = info["project_id"]
+    credentials = service_account.Credentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     return genai.Client(
         vertexai=True, project=project_id, location=location, credentials=credentials

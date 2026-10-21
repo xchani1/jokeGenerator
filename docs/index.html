@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Joke Generator</title>
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #fff; --text: #1d2433; --muted: #6b7385;
+    --accent: #4f46e5; --accent-text: #fff; --border: #dfe3ec; --chip: #eceefb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12141c; --card: #1c1f2b; --text: #e8eaf2; --muted: #9aa1b5;
+      --accent: #7c75ff; --accent-text: #fff; --border: #2d3142; --chip: #272b3d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    width: 100%; max-width: 560px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+  }
+  h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  .sub { margin: 0 0 20px; color: var(--muted); }
+  form { display: flex; gap: 8px; }
+  input {
+    flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  }
+  button {
+    font: inherit; cursor: pointer; border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--accent-text); padding: 10px 18px; font-weight: 600;
+  }
+  button:disabled { opacity: .6; cursor: wait; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+  .chips button {
+    background: var(--chip); color: var(--text); font-weight: 400; font-size: .85rem;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  #result { margin-top: 24px; min-height: 90px; }
+  .joke {
+    border-left: 4px solid var(--accent); padding: 4px 0 4px 16px; font-size: 1.15rem;
+    white-space: pre-wrap;
+  }
+  .tag { margin-top: 10px; font-size: .85rem; color: var(--muted); }
+  .error { color: #d33; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>📊 Data Joke Generator</h1>
+  <p class="sub">Pick a topic, or hit Surprise me.</p>
+  <button id="go" type="button">Surprise me</button>
+  <div class="chips" id="chips"></div>
+  <div id="result" aria-live="polite"><span class="muted">Pick a topic to get a joke.</span></div>
+</main>
+<script>
+  const $ = id => document.getElementById(id);
+  const result = $("result");
+  let pool = {}, last = null;
+
+  function show(topic) {
+    const jokes = pool[topic];
+    // Avoid repeating the joke that is already on screen.
+    let joke;
+    do { joke = jokes[Math.floor(Math.random() * jokes.length)]; }
+    while (jokes.length > 1 && joke === last);
+    last = joke;
+    result.innerHTML = "";
+    const j = document.createElement("div"); j.className = "joke"; j.textContent = joke;
+    const t = document.createElement("div"); t.className = "tag"; t.textContent = "Topic: " + topic;
+    result.append(j, t);
+  }
+
+  fetch("jokes.json").then(r => r.json()).then(data => {
+    pool = data;
+    const topics = Object.keys(pool);
+    topics.forEach(t => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = t;
+      b.onclick = () => show(t);
+      $("chips").append(b);
+    });
+    $("go").onclick = () => show(topics[Math.floor(Math.random() * topics.length)]);
+  }).catch(() => {
+    result.innerHTML = '<div class="error">Could not load jokes.json.</div>';
+  });
+</script>
+</body>
+</html>

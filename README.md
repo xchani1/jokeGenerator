@@ -19,3 +19,12 @@ Leave the topic blank to get a random one.
 - `main.py` – client setup, joke generation and the CLI
 - `app.py` – local server exposing `/api/joke` and serving the page
 - `index.html` – the web interface
+
+## GitHub Pages
+
+The `docs/` site is static: a GitHub Actions workflow (`.github/workflows/pages.yml`) runs `generate_jokes.py` to pre-generate jokes for every topic into `docs/jokes.json`, then deploys `docs/` to Pages. It runs on every push to `main`, weekly, and on demand.
+
+One-time setup in the repo on GitHub:
+1. Settings → Secrets and variables → Actions → New repository secret: name `GCP_CREDENTIALS`, value = the full contents of `creds.json`.
+2. Settings → Pages → Source: **GitHub Actions**.
+3. Actions tab → "Deploy jokes to GitHub Pages" → Run workflow.

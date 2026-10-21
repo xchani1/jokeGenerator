@@ -75,7 +75,9 @@
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: t }),
       });
-      const data = await res.json();
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error("The server didn't return JSON. Run `python app.py` and open http://127.0.0.1:8000 (not Live Server or the file directly)."); }
       if (!res.ok) throw new Error(data.error || res.statusText);
       result.innerHTML = "";
       const joke = document.createElement("div"); joke.className = "joke"; joke.textContent = data.joke;
